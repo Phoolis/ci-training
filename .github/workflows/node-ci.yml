@@ -26,9 +26,20 @@ jobs:
         run: npm run test
       - name: Build project
         run: npm run build
+        
       # Deployment to Render.com
-      - name: Deploy
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: Node-ci-pipeline
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Render
         env:
           deploy_url: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: |
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "RENDER_DEPLOY_HOOK_URL secret is not set"
+            exit 1
+          fi
+          
           curl "$deploy_url"
